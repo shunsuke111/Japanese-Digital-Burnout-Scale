@@ -1,0 +1,1 @@
+# Japanese-Digital-Burnout-Scale
