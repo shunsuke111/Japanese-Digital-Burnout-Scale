@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本語版デジタルバーンアウト尺度</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Interフォントの読み込み */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* カスタムスタイル */
+        .chart-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        /* ラジオボタンのカスタムスタイル */
+        input[type="radio"]:checked + label {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+            border-color: #3b82f6; /* border-blue-600 */
+        }
+        input[type="radio"] {
+            display: none; /* ラジオボタン本体を非表示 */
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-3xl w-full bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div class="p-8 md:p-12">
+            
+            <!-- ヘッダー -->
+            <header class="text-center mb-10">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                    日本語版デジタルバーンアウト尺度
+                </h1>
+                <p class="text-gray-600 text-lg">
+                    最近のあなたの状態について、最も当てはまるものを選んでください。
+                </p>
+            </header>
+
+            <!-- 質問フォーム -->
+            <form id="burnoutForm">
+                <div class="space-y-10" id="questionsContainer">
+                    <!-- 質問はJSによってここに挿入されます -->
+                </div>
+
+                <!-- 結果表示ボタン -->
+                <div class="mt-12 text-center">
+                    <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1">
+                        結果を見る
+                    </button>
+                </div>
+            </form>
+
+            <!-- エラーメッセージ -->
+            <div id="errorMessage" class="hidden mt-6 text-center text-red-600 font-semibold bg-red-100 p-3 rounded-lg">
+                すべての質問に回答してください。
+            </div>
+
+            <!-- 結果表示エリア -->
+            <div id="results" class="hidden mt-12 border-t pt-10">
+                <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
+                    診断結果
+                </h2>
+
+                <!-- 総合スコアとレベル -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8 text-center">
+                    <p class="text-sm font-semibold text-blue-700 uppercase tracking-wider">総合スコア</p>
+                    <p id="totalScoreDisplay" class="text-6xl font-extrabold text-blue-900 my-2">0</p>
+                    <div class="mt-4">
+                        <p id="levelDisplay" class="text-xl font-bold text-blue-800"></p>
+                        <p id="levelDescription" class="text-gray-700 mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- 下位尺度別スコア -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-6 text-center">下位尺度別スコア</h3>
+                    <div class="space-y-6">
+                        <!-- 第1因子 -->
+                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="text-lg font-semibold text-gray-700 block mb-2">第1因子：デジタル老化</span>
+                            <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
+                                <div id="factor1Bar" class="chart-bar bg-cyan-500 h-4 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <div class="text-left">
+                                    <span class="font-semibold text-gray-800">あなたのスコア:</span>
+                                    <span id="factor1Score" class="font-bold text-xl text-cyan-600">0</span>
+                                    <span class="text-gray-500"> / 55</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-semibold text-gray-800">平均スコア (N=231):</span>
+                                    <span id="factor1Mean" class="font-bold text-xl text-gray-600">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 第2因子 -->
+                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="text-lg font-semibold text-gray-700 block mb-2">第2因子：デジタル剥奪</span>
+                            <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
+                                <div id="factor2Bar" class="chart-bar bg-indigo-500 h-4 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <div class="text-left">
+                                    <span class="font-semibold text-gray-800">あなたのスコア:</span>
+                                    <span id="factor2Score" class="font-bold text-xl text-indigo-600">0</span>
+                                    <span class="text-gray-500"> / 20</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-semibold text-gray-800">平均スコア (N=231):</span>
+                                    <span id="factor2Mean" class="font-bold text-xl text-gray-600">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 第3因子 -->
+                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="text-lg font-semibold text-gray-700 block mb-2">第3因子：情緒的消耗</span>
+                            <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
+                                <div id="factor3Bar" class="chart-bar bg-purple-500 h-4 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <div class="text-left">
+                                    <span class="font-semibold text-gray-800">あなたのスコア:</span>
+                                    <span id="factor3Score" class="font-bold text-xl text-purple-600">0</span>
+                                    <span class="text-gray-500"> / 15</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-semibold text-gray-800">平均スコア (N=231):</span>
+                                    <span id="factor3Mean" class="font-bold text-xl text-gray-600">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- リセットボタン -->
+                <div class="mt-12 text-center">
+                    <button id="resetButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300 ease-in-out">
+                        もう一度診断する
+                    </button>
+                </div>
+                
+                <!-- 注意書き -->
+                <p class="text-xs text-gray-500 mt-10 text-center">
+                    ※本診断は医学的な診断に代わるものではありません。結果にかかわらず、心身の不調を感じる場合は専門家にご相談ください。
+                    <br>※スコアの解釈は研究データ(N=231)との比較に基づいています。
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. データ定義 ---
+
+            // 質問項目 (添付ファイルに基づく)
+            const questions = [
+                // 第1因子：デジタル老化 (11項目)
+                { text: "1. うつの症状があるのではないかと考え始めている。", factor: 1 },
+                { text: "2. 孤独感に支配されている。", factor: 1 },
+                { text: "3. 制限されているように感じる。", factor: 1 },
+                { text: "4. ストレスを感じている。", factor: 1 },
+                { text: "5. 心身の状態を把握できていない。", factor: 1 },
+                { text: "6. ときどき、頭の中がぼんやりしているように感じる。", factor: 1 },
+                { text: "7. バーチャル空間やデジタル空間のせいで、疲れを感じる。", factor: 1 },
+                { text: "8. いつか正気を失ってしまうのではないかと思っている。", factor: 1 },
+                { text: "9. 注意力が欠如している。", factor: 1 },
+                { text: "10. 人との関係やコミュニケーションが希薄になっている。", factor: 1 },
+                { text: "11. デジタル機器を使ってデジタル空間に長時間いる。", factor: 1 },
+                // 第2因子：デジタル剥奪 (4項目)
+                { text: "12. インターネットに接続していないときや、オフラインのときに不安を感じる。", factor: 2 },
+                { text: "13. インターネットに接続していないときや、オフラインのときは無力感を感じる。", factor: 2 },
+                { text: "14. LINE、YouTube、Instagram、X(旧Twitter)、TikTokを常にチェックしないと、違和感や不安を感じる。", factor: 2 },
+                { text: "15. デジタル機器（スマホ、タブレット、パソコンなど）が手元にないと無防備のような気がする。", factor: 2 },
+                // 第3因子：情緒的消耗 (3項目)
+                { text: "16. 短気になった。", factor: 3 },
+                { text: "17. せっかちになった。", factor: 3 },
+                { text: "18. 周囲の人に対して寛容でなくなったり、感情が鈍くなっていると感じる。", factor: 3 }
+            ];
+
+            // 回答選択肢 (5段階リッカート尺度と仮定)
+            const options = [
+                { text: "全くそう思わない", value: 1 },
+                { text: "そう思わない", value: 2 },
+                { text: "どちらともいえない", value: 3 },
+                { text: "そう思う", value: 4 },
+                { text: "非常にそう思う", value: 5 }
+            ];
+
+            // 基準データ (N=231)
+            const MEAN = 42.96;
+            const SD = 12.50;
+
+            // 5段階評価の境界値 (SDに基づく)
+            const LEVEL_1_MAX = MEAN - 1.5 * SD; // 24.21
+            const LEVEL_2_MAX = MEAN - 0.5 * SD; // 36.71
+            const LEVEL_3_MAX = MEAN + 0.5 * SD; // 49.21
+            const LEVEL_4_MAX = MEAN + 1.5 * SD; // 61.71
+
+            // 下位尺度の基準データ (N=231)
+            const FACTOR1_MEAN = 27.18;
+            const FACTOR1_SD = 8.74;
+            const FACTOR2_MEAN = 9.78;
+            const FACTOR2_SD = 3.97;
+            const FACTOR3_MEAN = 6.00;
+            const FACTOR3_SD = 2.85;
+
+            // DOM要素の取得
+            const questionsContainer = document.getElementById('questionsContainer');
+            const form = document.getElementById('burnoutForm');
+            const resultsDiv = document.getElementById('results');
+            const errorMessage = document.getElementById('errorMessage');
+            const resetButton = document.getElementById('resetButton');
+
+            // --- 2. 質問の動的生成 ---
+            function renderQuestions() {
+                let html = '';
+                questions.forEach((q, index) => {
+                    html += `<fieldset class="border border-gray-200 rounded-lg p-5 shadow-sm">`;
+                    html += `<legend class="text-lg font-semibold text-gray-800 px-2">${q.text}</legend>`;
+                    html += `<div class="flex flex-wrap justify-center gap-2 md:gap-4 mt-4">`;
+
+                    options.forEach(opt => {
+                        const inputId = `q${index}_${opt.value}`;
+                        html += `
+                            <div>
+                                <input type="radio" name="q${index}" id="${inputId}" value="${opt.value}" required>
+                                <label for="${inputId}" class="block cursor-pointer px-3 py-2 md:px-5 md:py-3 border border-gray-300 rounded-lg text-center text-sm md:text-base font-medium text-gray-700 hover:bg-gray-100 transition duration-200">
+                                    ${opt.text}
+                                </label>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div></fieldset>`;
+                });
+                questionsContainer.innerHTML = html;
+            }
+
+            // --- 3. 計算ロジック ---
+
+            // 5段階評価の判定
+            function getLevel(score) {
+                if (score < LEVEL_1_MAX) {
+                    return { level: "レベル1 (低い)", description: "デジタルバーンアウトの傾向は、調査参加者(N=231)の中で平均と比べて「低い」レベルです。" };
+                } else if (score < LEVEL_2_MAX) {
+                    return { level: "レベル2 (やや低い)", description: "デジタルバーンアウトの傾向は、調査参加者(N=231)の中で「やや低い」レベルです。" };
+                } else if (score < LEVEL_3_MAX) {
+                    return { level: "レベル3 (平均)", description: "デジタルバーンアウトの傾向は、調査参加者(N=231)の中で「平均的」なレベルです。" };
+                } else if (score < LEVEL_4_MAX) {
+                    return { level: "レベル4 (やや高い)", description: "デジタルバーンアウトの傾向は、調査参加者(N=231)の中で「やや高い」レベルです。少し注意が必要かもしれません。" };
+                } else {
+                    return { level: "レベル5 (高い)", description: "デジタルバーンアウトの傾向は、調査参加者(N=231)の中で「高い」レベルです。デジタルデトックスや休息を意識的にとることをお勧めします。" };
+                }
+            }
+
+            // 結果の計算と表示
+            function calculateAndShowResults(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const answers = [];
+                
+                // バリデーション
+                for (let i = 0; i < questions.length; i++) {
+                    const answer = formData.get(`q${i}`);
+                    if (!answer) {
+                        errorMessage.classList.remove('hidden');
+                        // 未回答の質問にスクロール
+                        document.getElementsByName(`q${i}`)[0].closest('fieldset').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                    answers.push(parseInt(answer, 10));
+                }
+
+                // エラーを隠す
+                errorMessage.classList.add('hidden');
+
+                // スコア計算
+                let totalScore = 0;
+                let scoreFactor1 = 0; // max 11*5 = 55
+                let scoreFactor2 = 0; // max 4*5 = 20
+                let scoreFactor3 = 0; // max 3*5 = 15
+
+                answers.forEach((answer, index) => {
+                    totalScore += answer;
+                    const factor = questions[index].factor;
+                    if (factor === 1) {
+                        scoreFactor1 += answer;
+                    } else if (factor === 2) {
+                        scoreFactor2 += answer;
+                    } else if (factor === 3) {
+                        scoreFactor3 += answer;
+                    }
+                });
+
+                // レベル判定
+                const levelInfo = getLevel(totalScore);
+
+                // --- 4. 結果の表示 ---
+                
+                // 総合スコア
+                document.getElementById('totalScoreDisplay').textContent = totalScore;
+                document.getElementById('levelDisplay').textContent = levelInfo.level;
+                document.getElementById('levelDescription').textContent = levelInfo.description;
+
+                // 下位尺度スコア
+                // 第1因子
+                document.getElementById('factor1Score').textContent = scoreFactor1;
+                document.getElementById('factor1Mean').textContent = FACTOR1_MEAN.toFixed(2); // 小数点以下2桁表示
+                // 第2因子
+                document.getElementById('factor2Score').textContent = scoreFactor2;
+                document.getElementById('factor2Mean').textContent = FACTOR2_MEAN.toFixed(2);
+                // 第3因子
+                document.getElementById('factor3Score').textContent = scoreFactor3;
+                document.getElementById('factor3Mean').textContent = FACTOR3_MEAN.toFixed(2);
+
+
+                // バーの幅を更新 (アニメーションのため少し遅延させる)
+                setTimeout(() => {
+                    document.getElementById('factor1Bar').style.width = `${(scoreFactor1 / 55) * 100}%`;
+                    document.getElementById('factor2Bar').style.width = `${(scoreFactor2 / 20) * 100}%`;
+                    document.getElementById('factor3Bar').style.width = `${(scoreFactor3 / 15) * 100}%`;
+                }, 100);
+
+
+                // フォームを非表示にし、結果を表示
+                form.classList.add('hidden');
+                resultsDiv.classList.remove('hidden');
+                
+                // 結果表示位置にスクロール
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // --- 5. リセット処理 ---
+            function resetForm() {
+                form.reset();
+                resultsDiv.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+                form.classList.remove('hidden');
+                
+                // バーをリセット
+                document.getElementById('factor1Bar').style.width = '0%';
+                document.getElementById('factor2Bar').style.width = '0%';
+                document.getElementById('factor3Bar').style.width = '0%';
+
+                // ページ上部にスクロール
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // --- 6. イベントリスナーの設定 ---
+            form.addEventListener('submit', calculateAndShowResults);
+            resetButton.addEventListener('click', resetForm);
+
+            // --- 初期化 ---
+            renderQuestions();
+        });
+    </script>
+</body>
+</html>
