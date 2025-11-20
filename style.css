@@ -7,18 +7,33 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* カスタムスタイル */
+/* グラフ用バー */
 .chart-bar {
     transition: width 0.5s ease-in-out;
 }
 
-/* ラジオボタンのカスタムスタイル */
-input[type="radio"]:checked + label {
-    background-color: #3b82f6; /* bg-blue-600 */
-    color: white;
-    border-color: #3b82f6; /* border-blue-600 */
+/* ラジオボタン本体は非表示 */
+input[type="radio"] {
+    display: none;
 }
 
-input[type="radio"] {
-    display: none; /* ラジオボタン本体を非表示 */
+/* 通常状態の選択肢ラベル */
+.rating-label {
+    border: 1px solid #d1d5db;  /* gray-300 */
+    background-color: #ffffff;
+    color: #374151;             /* gray-700 */
+    border-radius: 0.5rem;      /* rounded-lg 相当 */
+    transition: background-color .2s, color .2s, border-color .2s;
+}
+
+/* hover時 */
+.rating-label:hover {
+    background-color: #f3f4f6;  /* gray-100 */
+}
+
+/* 選択されたとき（input:checked の直後の label） */
+input[type="radio"]:checked + .rating-label {
+    background-color: #3b82f6 !important; /* blue-500/600 */
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
 }
