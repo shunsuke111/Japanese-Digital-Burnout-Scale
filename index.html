@@ -14,8 +14,31 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- カスタムCSS -->
-    <link rel="stylesheet" href="styles.css?v=20251122">
+    <style>
+        /* Interフォントの読み込み */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* カスタムスタイル */
+        .chart-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        /* ラジオボタンのカスタムスタイル */
+        input[type="radio"]:checked + label {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+            border-color: #3b82f6; /* border-blue-600 */
+        }
+        input[type="radio"] {
+            display: none; /* ラジオボタン本体を非表示 */
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
 
@@ -51,7 +74,7 @@
                 すべての質問に回答してください。
             </div>
 
-            <!-- 診断結果エリア -->
+            <!-- 結果表示エリア -->
             <div id="results" class="hidden mt-12 border-t pt-10">
                 <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
                     診断結果
@@ -156,7 +179,7 @@
         </div>
     </div>
 
-    <!-- 外部JS（更新時は v= の数字だけ変える） -->
+    <!-- 外部JS読み込み（v=はキャッシュバスター：更新時に数字だけ変える） -->
     <script src="app.js?v=20251122"></script>
 </body>
 </html>
