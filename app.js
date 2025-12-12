@@ -62,6 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const adviceSection = document.getElementById('adviceSection');
     const adviceTextElement = document.getElementById('adviceText');
 
+    // チャート用変数 (追加)
+    let radarChart = null;
+
     // --- 2. 質問の動的生成 ---
     function renderQuestions() {
         let html = '';
@@ -133,6 +136,103 @@ document.addEventListener('DOMContentLoaded', () => {
         return advice;
     }
 
+    // チャート描画関数 (追加)
+    function drawRadarChart(daScore, ddScore, eeScore) {
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        
+        // 満点
+        const maxDA = 55;
+        const maxDD = 20;
+        const maxEE = 15;
+
+        // 得点率(%)に換算
+        const daPercent = (daScore / maxDA) * 100;
+        const ddPercent = (ddScore / maxDD) * 100;
+        const eePercent = (eeScore / maxEE) * 100;
+
+        // 平均の得点率
+        const daMeanPercent = (FACTOR1_MEAN / maxDA) * 100;
+        const ddMeanPercent = (FACTOR2_MEAN / maxDD) * 100;
+        const eeMeanPercent = (FACTOR3_MEAN / maxEE) * 100;
+
+        if (radarChart) {
+            radarChart.destroy();
+        }
+
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['デジタル老化 (DA)', 'デジタル剥奪 (DD)', '情緒的消耗 (EE)'],
+                datasets: [{
+                    label: 'あなたのスコア',
+                    data: [daPercent, ddPercent, eePercent],
+                    backgroundColor: 'rgba(59, 130, 246, 0.4)', // blue-500 with opacity
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                }, {
+                    label: '平均 (N=231)',
+                    data: [daMeanPercent, ddMeanPercent, eeMeanPercent],
+                    backgroundColor: 'rgba(156, 163, 175, 0.2)', // gray-400 with opacity
+                    borderColor: 'rgba(156, 163, 175, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5], // 点線
+                    pointRadius: 0 // 平均の点は表示しない
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100, // 0-100%で表示
+                        ticks: {
+                            stepSize: 20,
+                            callback: function(value) {
+                                return value + '%'; 
+                            }
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 14,
+                                family: "'Inter', 'Noto Sans JP', sans-serif",
+                                weight: 'bold'
+                            },
+                            color: '#374151' // gray-700
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                family: "'Inter', 'Noto Sans JP', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.raw.toFixed(1) + '%';
+                                return `${label}: ${value}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     // 結果の計算と表示
     function calculateAndShowResults(e) {
         e.preventDefault();
@@ -184,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         adviceTextElement.textContent = adviceText;
         adviceSection.classList.remove('hidden');
 
-        // 下位尺度スコア
+        // 下位尺度スコア表示
         document.getElementById('factor1Score').textContent = scoreFactor1;
         document.getElementById('factor1Mean').textContent = FACTOR1_MEAN.toFixed(2);
 
@@ -194,16 +294,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('factor3Score').textContent = scoreFactor3;
         document.getElementById('factor3Mean').textContent = FACTOR3_MEAN.toFixed(2);
 
-        // バーの幅更新
-        setTimeout(() => {
-            document.getElementById('factor1Bar').style.width = `${(scoreFactor1 / 55) * 100}%`;
-            document.getElementById('factor2Bar').style.width = `${(scoreFactor2 / 20) * 100}%`;
-            document.getElementById('factor3Bar').style.width = `${(scoreFactor3 / 15) * 100}%`;
-        }, 100);
-
         // フォーム非表示、結果表示
         form.classList.add('hidden');
         resultsDiv.classList.remove('hidden');
+
+        // レーダーチャート描画 (変更)
+        // 画面描画のタイミングに合わせて実行
+        requestAnimationFrame(() => {
+            drawRadarChart(scoreFactor1, scoreFactor2, scoreFactor3);
+        });
+
         resultsDiv.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -215,9 +315,11 @@ document.addEventListener('DOMContentLoaded', () => {
         adviceSection.classList.add('hidden');
         form.classList.remove('hidden');
 
-        document.getElementById('factor1Bar').style.width = '0%';
-        document.getElementById('factor2Bar').style.width = '0%';
-        document.getElementById('factor3Bar').style.width = '0%';
+        // チャート破棄 (変更)
+        if (radarChart) {
+            radarChart.destroy();
+            radarChart = null;
+        }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
