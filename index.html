@@ -13,6 +13,8 @@
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN (追加) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* Interフォントの読み込み */
@@ -24,11 +26,6 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* カスタムスタイル */
-        .chart-bar {
-            transition: width 0.5s ease-in-out;
-        }
-        
         /* ラジオボタンのカスタムスタイル */
         input[type="radio"]:checked + label {
             background-color: #3b82f6; /* bg-blue-600 */
@@ -101,62 +98,50 @@
                     <p id="adviceText" class="text-green-900 text-base leading-relaxed font-medium"></p>
                 </div>
 
-                <!-- 下位尺度別スコア -->
+                <!-- レーダーチャートエリア (変更) -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">下位尺度のバランス</h3>
+                    <p class="text-sm text-gray-500 text-center mb-6">※各因子の得点率（%）を表示しています。外側に広がるほど傾向が強いことを示します。</p>
+                    <div class="relative h-72 w-full max-w-md mx-auto">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 下位尺度別スコア詳細 (変更: バー削除) -->
                 <div>
-                    <h3 class="text-2xl font-semibold text-gray-800 mb-6 text-center">下位尺度別スコア</h3>
-                    <div class="space-y-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">スコア詳細</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- 第1因子 -->
-                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <span class="text-lg font-semibold text-gray-700 block mb-2">第1因子：デジタル老化 (DA)</span>
-                            <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
-                                <div id="factor1Bar" class="chart-bar bg-cyan-500 h-4 rounded-full" style="width: 0%"></div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                            <span class="text-sm font-semibold text-gray-500 block mb-1">デジタル老化 (DA)</span>
+                            <div class="flex justify-center items-baseline space-x-2">
+                                <span id="factor1Score" class="font-bold text-2xl text-cyan-600">0</span>
+                                <span class="text-gray-400 text-sm">/ 55</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <div class="text-left">
-                                    <span class="font-semibold text-gray-800">あなたのスコア:</span>
-                                    <span id="factor1Score" class="font-bold text-xl text-cyan-600">0</span>
-                                    <span class="text-gray-500"> / 55</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="font-semibold text-gray-800">平均スコア (N=231):</span>
-                                    <span id="factor1Mean" class="font-bold text-xl text-gray-600">0.00</span>
-                                </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                平均: <span id="factor1Mean">0.00</span>
                             </div>
                         </div>
                         <!-- 第2因子 -->
-                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <span class="text-lg font-semibold text-gray-700 block mb-2">第2因子：デジタル剥奪 (DD)</span>
-                            <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
-                                <div id="factor2Bar" class="chart-bar bg-indigo-500 h-4 rounded-full" style="width: 0%"></div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                            <span class="text-sm font-semibold text-gray-500 block mb-1">デジタル剥奪 (DD)</span>
+                            <div class="flex justify-center items-baseline space-x-2">
+                                <span id="factor2Score" class="font-bold text-2xl text-indigo-600">0</span>
+                                <span class="text-gray-400 text-sm">/ 20</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <div class="text-left">
-                                    <span class="font-semibold text-gray-800">あなたのスコア:</span>
-                                    <span id="factor2Score" class="font-bold text-xl text-indigo-600">0</span>
-                                    <span class="text-gray-500"> / 20</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="font-semibold text-gray-800">平均スコア (N=231):</span>
-                                    <span id="factor2Mean" class="font-bold text-xl text-gray-600">0.00</span>
-                                </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                平均: <span id="factor2Mean">0.00</span>
                             </div>
                         </div>
                         <!-- 第3因子 -->
-                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <span class="text-lg font-semibold text-gray-700 block mb-2">第3因子：情緒的消耗 (EE)</span>
-                            <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
-                                <div id="factor3Bar" class="chart-bar bg-purple-500 h-4 rounded-full" style="width: 0%"></div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                            <span class="text-sm font-semibold text-gray-500 block mb-1">情緒的消耗 (EE)</span>
+                            <div class="flex justify-center items-baseline space-x-2">
+                                <span id="factor3Score" class="font-bold text-2xl text-purple-600">0</span>
+                                <span class="text-gray-400 text-sm">/ 15</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <div class="text-left">
-                                    <span class="font-semibold text-gray-800">あなたのスコア:</span>
-                                    <span id="factor3Score" class="font-bold text-xl text-purple-600">0</span>
-                                    <span class="text-gray-500"> / 15</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="font-semibold text-gray-800">平均スコア (N=231):</span>
-                                    <span id="factor3Mean" class="font-bold text-xl text-gray-600">0.00</span>
-                                </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                平均: <span id="factor3Mean">0.00</span>
                             </div>
                         </div>
                     </div>
@@ -179,7 +164,7 @@
         </div>
     </div>
 
-    <!-- 外部JS読み込み（v=はキャッシュバスター：更新時に数字だけ変える） -->
+    <!-- 外部JS読み込み（v=はキャッシュバスター） -->
     <script src="app.js?v=20251122"></script>
 </body>
 </html>
