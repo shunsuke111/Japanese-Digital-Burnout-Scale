@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['デジタル老化 (DA)', 'デジタル剥奪 (DD)', '情緒的消耗 (EE)'],
+                labels: ['DA', 'DD', 'EE'],
                 datasets: [{
                     label: 'あなたのスコア',
                     data: [daPercent, ddPercent, eePercent],
